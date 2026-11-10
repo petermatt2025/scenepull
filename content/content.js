@@ -12,11 +12,14 @@
   // ---------- messaging ----------
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg?.type === "SP_SCRAPE") {
-      try {
-        sendResponse({ ok: true, data: S.scrapeCurrentPage() });
-      } catch (e) {
-        sendResponse({ ok: false, error: String(e) });
-      }
+      Promise.resolve()
+        .then(() => S.scrapeCurrentPage())
+        .then((data) => sendResponse({ ok: true, data }))
+        .catch((e) => sendResponse({ ok: false, error: String(e) }));
+      return true; // async
+    }
+    if (msg?.type === "SP_VIDEO_FRAME") {
+      sendResponse(grabVideoFrame(msg.max || 1280));
       return false;
     }
     if (msg?.type === "SP_PING") {
@@ -25,6 +28,39 @@
     }
     return false;
   });
+
+  // ---------- frame from the playing video ----------
+  // Draws the video in view onto a canvas. Needs no extra permission, but fails if
+  // the site serves the video in a way the browser marks as "protected" (tainted).
+  function activeVideo() {
+    const mid = window.innerHeight / 2;
+    let best = null, bestScore = -Infinity;
+    for (const v of document.querySelectorAll("video")) {
+      const r = v.getBoundingClientRect();
+      if (r.width < 80 || r.height < 80 || v.readyState < 2) continue;
+      const visible = Math.max(0, Math.min(r.bottom, innerHeight) - Math.max(r.top, 0)) *
+        Math.max(0, Math.min(r.right, innerWidth) - Math.max(r.left, 0));
+      const score = visible - Math.abs(r.top + r.height / 2 - mid);
+      if (score > bestScore) { bestScore = score; best = v; }
+    }
+    return best;
+  }
+
+  function grabVideoFrame(max) {
+    const v = activeVideo();
+    if (!v || !v.videoWidth) return { ok: false, error: "no-video" };
+    try {
+      const scale = Math.min(1, max / Math.max(v.videoWidth, v.videoHeight));
+      const c = document.createElement("canvas");
+      c.width = Math.round(v.videoWidth * scale);
+      c.height = Math.round(v.videoHeight * scale);
+      c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+      const url = c.toDataURL("image/jpeg", 0.85); // throws if tainted
+      return { ok: true, dataUrl: url };
+    } catch (e) {
+      return { ok: false, error: "protected" };
+    }
+  }
 
   // ---------- floating launcher ----------
   function buildButton() {
@@ -99,11 +135,11 @@
   }
 
   // ---------- passive trend flag ----------
-  function evaluateTrend() {
+  async function evaluateTrend() {
     if (!btn) return;
     const flag = btn.querySelector(".sp-fab-flag");
     let data;
-    try { data = S.scrapeCurrentPage(); } catch { data = null; }
+    try { data = await S.scrapeCurrentPage(); } catch { data = null; }
     if (!data || data.error || !data.views) {
       flag.hidden = true;
       btn.classList.remove("sp-hot");
@@ -134,7 +170,7 @@
     prefs = { ...DEFAULT_PREFS, ...(settings?.prefs || {}) };
     if (prefs.showFloatingButton) buildButton();
     setInterval(onUrlMaybeChanged, 800);
-    setInterval(evaluateTrend, 4000);
+    setInterval(evaluateTrend, 15000);
     setTimeout(evaluateTrend, 1500);
   }
 

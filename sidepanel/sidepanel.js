@@ -59,12 +59,19 @@ function persist() {
   saveTimer = setTimeout(() => chrome.storage.local.set({ draft: state }), 250);
 }
 
+function setStatus(id, html, ok = false) {
+  const el = $("#" + id);
+  if (!el) return;
+  el.innerHTML = html || "";
+  el.classList.toggle("ok", ok);
+}
+
 function toast(msg) {
   const t = $("#toast");
   t.textContent = msg;
   t.classList.add("show");
   clearTimeout(t._h);
-  t._h = setTimeout(() => t.classList.remove("show"), 1800);
+  t._h = setTimeout(() => t.classList.remove("show"), 3000);
 }
 
 // ------------------------------------------------------------------ tab / page
@@ -104,6 +111,9 @@ async function scan({ autoFrame = false } = {}) {
   }
   const btn = $("#btnScan");
   btn.disabled = true;
+  const label = btn.textContent;
+  btn.textContent = "Reading…";
+  setStatus("scanStatus", "");
   try {
     const res = await sendToTab({ type: "SP_SCRAPE" });
     if (!res?.ok || res.data?.error) throw new Error(res?.error || res?.data?.error || "Could not read page");
@@ -116,12 +126,24 @@ async function scan({ autoFrame = false } = {}) {
     if (autoFrame && settings.prefs.captureFrame && !state.frames.length) await grabFrame({ silent: true });
     persist();
     renderAll();
-    toast(sameVideo ? "Stats refreshed" : "Video captured");
+    const d = res.data;
+    const found = ["views", "likes", "comments"].filter((k) => d[k] != null).length;
+    if (!found) {
+      setStatus("scanStatus",
+        d.platform === "instagram"
+          ? "Couldn't read the numbers for this Reel. Make sure you're logged in to Instagram, then <b>refresh the page (F5)</b> and press Capture again."
+          : "Couldn't read the numbers on this page. <b>Refresh the page (F5)</b> and press Capture again.");
+      toast("Captured, but no stats found");
+    } else {
+      toast(sameVideo ? "Stats refreshed" : "Video captured");
+    }
   } catch (e) {
-    toast("Couldn't read this page — try reloading it");
+    setStatus("scanStatus", "ScenePull couldn't talk to this page. <b>Refresh the page (F5)</b>, then press Capture again.");
+    toast("Couldn't read this page — refresh it");
     console.warn("[ScenePull] scan failed", e);
   } finally {
     btn.disabled = false;
+    btn.textContent = label;
   }
 }
 
@@ -133,16 +155,29 @@ async function grabFrame({ silent = false } = {}) {
     return;
   }
   let dataUrl = null;
-  try {
-    dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "jpeg", quality: 80 });
-  } catch {
-    const r = await chrome.runtime.sendMessage({ type: "SP_CAPTURE_TAB", windowId: tab.windowId }).catch(() => null);
-    dataUrl = r?.ok ? r.dataUrl : null;
+  // 1) Straight from the video player: cleanest image, needs no extra permission.
+  const v = await sendToTab({ type: "SP_VIDEO_FRAME", max: 1280 }).catch(() => null);
+  if (v?.ok) dataUrl = v.dataUrl;
+  // 2) Screenshot of the visible tab: Chrome only allows this after the toolbar icon is clicked.
+  if (!dataUrl) {
+    try {
+      dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "jpeg", quality: 80 });
+    } catch {
+      const r = await chrome.runtime.sendMessage({ type: "SP_CAPTURE_TAB", windowId: tab.windowId }).catch(() => null);
+      dataUrl = r?.ok ? r.dataUrl : null;
+    }
   }
   if (!dataUrl) {
-    if (!silent) toast("Click the ScenePull toolbar icon once to allow screenshots on this tab");
+    if (!silent) {
+      setStatus("frameStatus",
+        v?.error === "no-video"
+          ? "No playing video found. Let the video load and play for a second, then press <b>Grab frame</b> again."
+          : "Chrome blocked the screenshot. Click the <b>ScenePull icon in the Chrome toolbar</b> (puzzle-piece menu → ScenePull) once while this video is open, then press <b>Grab frame</b> again.");
+      toast("Couldn't grab a frame — see the note below");
+    }
     return;
   }
+  setStatus("frameStatus", "");
   const frame = await downscale(dataUrl, 1280);
   state.frames.push(frame);
   persist();
@@ -227,7 +262,7 @@ function renderCapture() {
     sig("Views", formatNumber(s.views), s.views == null ? "Not shown on this page (Instagram often hides plays)" : ""),
     sig("Likes", formatNumber(s.likes)),
     sig("Comments", formatNumber(s.comments)),
-    s.platform === "tiktok" ? sig("Shares", formatNumber(s.shares)) : "",
+    s.shares != null ? sig("Shares", formatNumber(s.shares)) : "",
     sig("Posted", timeAgo(s.postDate), formatDate(s.postDate)),
     sig("Views / hr", t.velocity ? formatNumber(Math.round(t.velocity)) : "—", "Views divided by hours since posting"),
     sig("Engagement", t.engagement ? (t.engagement * 100).toFixed(1) + "%" : "—", "Weighted likes + comments + shares + saves per view"),

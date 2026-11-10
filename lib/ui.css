@@ -113,7 +113,8 @@ input:focus, select:focus, textarea:focus { outline: 2px solid color-mix(in srgb
 /* ---------- toast ---------- */
 #toast {
   position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%) translateY(20px);
-  background: #0f172a; color: #fff; padding: 8px 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+  background: #2563eb; color: #fff; padding: 9px 16px; border-radius: 999px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 6px 20px rgba(0,0,0,.35); max-width: calc(100% - 32px); text-align: center;
   opacity: 0; pointer-events: none; transition: opacity .18s, transform .18s; z-index: 100;
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -124,3 +125,9 @@ input:focus, select:focus, textarea:focus { outline: 2px solid color-mix(in srgb
   animation: spin .8s linear infinite; display: inline-block;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- inline status under capture cards ---------- */
+.sp-status { margin-top: 8px; padding: 8px 10px; border-radius: 8px; font-size: 12.5px; line-height: 1.4;
+  background: color-mix(in srgb, #f59e0b 14%, transparent); border: 1px solid color-mix(in srgb, #f59e0b 45%, transparent); }
+.sp-status.ok { background: color-mix(in srgb, #22c55e 12%, transparent); border-color: color-mix(in srgb, #22c55e 40%, transparent); }
+.sp-status:empty { display: none; }

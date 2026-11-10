@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ScenePull",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Turn any trending TikTok or Instagram video into a step-by-step production brief for your AI character.",
   "minimum_chrome_version": "116",
   "permissions": [
