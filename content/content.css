@@ -1,0 +1,42 @@
+/* Floating launcher injected on TikTok / Instagram.
+   Brand colours mirror lib/theme.css (--sp-primary / --sp-accent). */
+#scenepull-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 96px;
+  z-index: 2147483646;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px 6px 6px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+#scenepull-fab:hover { transform: translateY(-1px); box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45); }
+#scenepull-fab:active { cursor: grabbing; }
+#scenepull-fab .sp-fab-logo {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #2563eb;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+#scenepull-fab .sp-fab-flag {
+  margin-left: 2px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #f97316;
+  font-size: 11px;
+}
+#scenepull-fab.sp-hot { box-shadow: 0 0 0 2px #f97316, 0 8px 24px rgba(249, 115, 22, 0.45); }

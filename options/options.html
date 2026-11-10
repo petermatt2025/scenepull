@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ScenePull Settings</title>
+  <link rel="stylesheet" href="../lib/theme.css" />
+  <link rel="stylesheet" href="../lib/ui.css" />
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="wrap row between">
+      <div class="brand"><img src="../icons/icon48.png" width="28" height="28" alt="" /> ScenePull <span class="muted-ink">Settings</span></div>
+      <span class="small muted-ink" id="version"></span>
+    </div>
+  </header>
+
+  <div class="wrap layout">
+    <nav class="side" id="nav">
+      <a href="#providers" class="active">🔑 AI providers</a>
+      <a href="#characters">🎭 Characters</a>
+      <a href="#preferences">🎛 Preferences</a>
+      <a href="#data">💾 Import / export</a>
+      <a href="#help">❓ Getting started</a>
+    </nav>
+
+    <main>
+      <!-- PROVIDERS -->
+      <section id="providers" class="panel">
+        <h2>AI providers <span class="tip right" tabindex="0" data-tip="ScenePull is bring-your-own-key: briefs are generated with your account, so you only pay the provider's usage cost (usually under 1¢ per brief). Keys stay in this browser.">?</span></h2>
+        <p class="muted">Add a key for at least one provider, then choose which one ScenePull uses. Keys are stored only on this computer and sent only to that provider.</p>
+
+        <div class="card">
+          <label class="field">Active provider
+            <select id="activeProvider"></select>
+          </label>
+        </div>
+
+        <div id="providerCards"></div>
+      </section>
+
+      <!-- CHARACTERS -->
+      <section id="characters" class="panel">
+        <div class="row between">
+          <h2>Characters <span class="tip right" tabindex="0" data-tip="Each profile is a recurring AI 'person'. Its fixed appearance is copied into every image prompt so your character looks the same in every video.">?</span></h2>
+          <button class="btn primary" id="btnAddChar">＋ New character</button>
+        </div>
+        <div id="charList" class="char-list"></div>
+
+        <div id="charForm" class="card hidden">
+          <h3 id="charFormTitle">New character</h3>
+          <div class="grid2">
+            <label class="field">Name *
+              <input type="text" id="cfName" placeholder="e.g. Pierre Moustache" /></label>
+            <label class="field"><span class="row">Niche / audience <span class="tip" tabindex="0" data-tip="Who the videos are for. Shapes jokes, hashtags and captions, e.g. 'gym humour', 'cooking fails', 'office life'.">?</span></span>
+              <input type="text" id="cfNiche" placeholder="e.g. absurd park comedy for 18–35" /></label>
+          </div>
+          <label class="field"><span class="row">Fixed appearance * <span class="tip" tabindex="0" data-tip="Be precise and visual: age, build, skin, hair, facial hair, eyes, outfit, signature item. These words go into every image prompt.">?</span></span>
+            <textarea id="cfAppearance" rows="3" placeholder="Man, ~45, slim, pale skin, slicked-back platinum-blonde hair, big curled waxed moustache, navy three-piece suit, red pocket square"></textarea></label>
+          <label class="field"><span class="row">Personality / voice <span class="tip" tabindex="0" data-tip="How they act and react. Drives hooks, captions and the scene's comedic beat.">?</span></span>
+            <textarea id="cfPersonality" rows="2" placeholder="Deadpan, overly formal, treats absurd situations with total seriousness"></textarea></label>
+          <div class="grid2">
+            <label class="field">Recurring setting
+              <input type="text" id="cfSet" placeholder="City park at golden hour" /></label>
+            <label class="field"><span class="row">Visual style <span class="tip" tabindex="0" data-tip="e.g. 'photoreal iPhone footage', 'Pixar-style 3D', 'grainy 90s camcorder'. Default is photoreal smartphone.">?</span></span>
+              <input type="text" id="cfStyle" placeholder="Photoreal, handheld smartphone look" /></label>
+          </div>
+          <label class="field">Things to avoid
+            <input type="text" id="cfAvoid" placeholder="No swearing, no brand logos, no other recognisable people" /></label>
+          <div class="row" style="margin-top:12px">
+            <button class="btn primary" id="btnSaveChar">Save character</button>
+            <button class="btn" id="btnCancelChar">Cancel</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- PREFERENCES -->
+      <section id="preferences" class="panel">
+        <h2>Preferences</h2>
+        <div class="card stack">
+          <label class="check"><input type="checkbox" id="pfFab" /><span><b>Show the floating ScenePull button</b> on TikTok and Instagram <span class="tip" tabindex="0" data-tip="A small draggable button on the page that opens the side panel and turns orange with a 🔥 when the video you're watching is trending.">?</span></span></label>
+          <label class="check"><input type="checkbox" id="pfFrame" /><span><b>Grab a frame automatically</b> when a video is captured <span class="tip" tabindex="0" data-tip="Takes a screenshot of the visible tab so vision-capable AI models can see the scene. You can add or remove frames manually too.">?</span></span></label>
+          <div class="grid2">
+            <label class="field"><span class="row">"Hot" view threshold <span class="tip" tabindex="0" data-tip="Total views at which a video counts as Hot when post time isn't available.">?</span></span>
+              <input type="number" id="pfViews" min="1000" step="1000" /></label>
+            <label class="field"><span class="row">"Hot" views per hour <span class="tip" tabindex="0" data-tip="Velocity threshold. A newer video with 20k+ views per hour is usually a format worth chasing now.">?</span></span>
+              <input type="number" id="pfVelocity" min="100" step="100" /></label>
+            <label class="field">Hook options per brief
+              <select id="pfHooks"><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+            <label class="field">Output language
+              <input type="text" id="pfLang" placeholder="English" /></label>
+            <label class="field"><span class="row">Your image tool <span class="tip" tabindex="0" data-tip="Named in your manual steps checklist, e.g. 'Midjourney', 'Ideogram', 'ChatGPT Images'.">?</span></span>
+              <input type="text" id="pfImgTool" /></label>
+            <label class="field"><span class="row">Your video tool <span class="tip" tabindex="0" data-tip="Your image-to-video tool, e.g. 'Kling', 'Runway', 'Veo'. Shown in the checklist.">?</span></span>
+              <input type="text" id="pfVidTool" /></label>
+            <label class="field">Theme
+              <select id="pfTheme"><option value="auto">Match system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+          </div>
+          <div><button class="btn primary" id="btnSavePrefs">Save preferences</button></div>
+        </div>
+      </section>
+
+      <!-- DATA -->
+      <section id="data" class="panel">
+        <h2>Import / export <span class="tip right" tabindex="0" data-tip="Use this to move ScenePull to another computer, or keep a backup of your characters and briefs.">?</span></h2>
+        <div class="card stack">
+          <h3>Export</h3>
+          <p class="muted small">Downloads a .json file with your characters, preferences, model choices and (optionally) history and API keys.</p>
+          <label class="check"><input type="checkbox" id="exHistory" checked /><span>Include brief history</span></label>
+          <label class="check"><input type="checkbox" id="exKeys" /><span>Include API keys <span class="tip" tabindex="0" data-tip="Handy for your own second computer. The file will contain your keys in plain text, so don't share it or upload it anywhere public.">?</span></span></label>
+          <div><button class="btn primary" id="btnExport">⬇ Export settings</button></div>
+        </div>
+        <div class="card stack">
+          <h3>Import</h3>
+          <p class="muted small">Choose a ScenePull export file. <b>Merge</b> adds characters and history to what's here; <b>Replace</b> overwrites everything.</p>
+          <div class="row wrap">
+            <label class="check"><input type="radio" name="imMode" value="merge" checked /><span>Merge</span></label>
+            <label class="check"><input type="radio" name="imMode" value="replace" /><span>Replace</span></label>
+          </div>
+          <div class="row wrap">
+            <input type="file" id="importFile" accept="application/json,.json" class="hidden" />
+            <button class="btn" id="btnImport">⬆ Import settings</button>
+            <span id="importStatus" class="small"></span>
+          </div>
+        </div>
+        <div class="card stack danger-zone">
+          <h3>Reset</h3>
+          <p class="muted small">Removes all keys, characters, history and preferences from this browser.</p>
+          <div><button class="btn danger" id="btnReset">Reset ScenePull</button></div>
+        </div>
+      </section>
+
+      <!-- HELP -->
+      <section id="help" class="panel">
+        <h2>Getting started</h2>
+        <div class="card">
+          <ol class="help">
+            <li><b>Add an API key</b> above (Anthropic, OpenAI, Gemini or OpenRouter) and press <b>Test &amp; load models</b>.</li>
+            <li><b>Create a character</b> with a precise, fixed appearance.</li>
+            <li>Pin ScenePull: click the puzzle icon in Chrome's toolbar → pin. Click it on any TikTok or Instagram video to open the side panel. Drag the panel's edge to make it wider.</li>
+            <li>Follow the 5 tabs: <b>Capture → Character → Brief → Produce → Publish</b>. ⚡ cards are automated; ✋ cards are the steps you do yourself.</li>
+            <li>Shortcut: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> opens the panel.</li>
+          </ol>
+          <p class="small muted">ScenePull only reads what's publicly visible on the page you're viewing. It never reads your login, messages or private data. Please follow each platform's rules, label AI-generated content, and only create original characters — never imitate real people.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

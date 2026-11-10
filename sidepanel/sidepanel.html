@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ScenePull</title>
+  <link rel="stylesheet" href="../lib/theme.css" />
+  <link rel="stylesheet" href="../lib/ui.css" />
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header class="app-head">
+    <div class="brand">
+      <img src="../icons/icon32.png" alt="" width="22" height="22" />
+      <span>ScenePull</span>
+      <span id="platformChip" class="chip">No video</span>
+    </div>
+    <div class="head-actions">
+      <button class="icon-btn" id="btnDensity" title="Toggle compact / expanded layout">⇕</button>
+      <button class="icon-btn" id="btnNew" title="Start a new brief (clears the current one)">＋</button>
+      <button class="icon-btn" id="btnHistory" title="History of briefs you've generated">🕘</button>
+      <button class="icon-btn" id="btnSettings" title="Settings: API keys, characters, import/export">⚙</button>
+    </div>
+  </header>
+
+  <nav class="steps" id="steps" role="tablist">
+    <button role="tab" data-step="0"><b>1</b><span>Capture</span></button>
+    <button role="tab" data-step="1"><b>2</b><span>Character</span></button>
+    <button role="tab" data-step="2"><b>3</b><span>Brief</span></button>
+    <button role="tab" data-step="3"><b>4</b><span>Produce</span></button>
+    <button role="tab" data-step="4"><b>5</b><span>Publish</span></button>
+  </nav>
+
+  <div id="pageChanged" class="banner hidden">
+    <span>You switched videos.</span>
+    <button class="btn sm primary" id="btnRescanBanner">Capture this one</button>
+    <button class="btn sm ghost" id="btnDismissBanner">Keep current</button>
+  </div>
+
+  <main id="main">
+    <!-- STEP 1: CAPTURE -->
+    <section class="step" data-step="0">
+      <div id="unsupported" class="empty hidden">
+        <div class="empty-icon">🎬</div>
+        <h3>Open a TikTok or Instagram video</h3>
+        <p class="muted">Go to any TikTok video or Instagram Reel, then come back here and press <b>Capture</b>. The ScenePull button on the page also opens this panel.</p>
+        <div class="row" style="justify-content:center">
+          <a class="btn sm" href="https://www.tiktok.com/foryou" target="_blank">Open TikTok</a>
+          <a class="btn sm" href="https://www.instagram.com/reels/" target="_blank">Open Reels</a>
+        </div>
+      </div>
+
+      <div id="captureBody" class="stack">
+        <div class="card auto">
+          <div class="card-head">
+            <h4>Trend signals <span class="tip" tabindex="0" data-tip="Pulled straight from the page — no AI used. 'Views/hr' is views divided by hours since posting: the best early sign a format is taking off.">?</span></h4>
+            <div class="row">
+              <span id="trendPill" class="pill">—</span>
+              <button class="btn sm" id="btnScan" title="Read this video's stats again">↻ Capture</button>
+            </div>
+          </div>
+          <div class="signals" id="signals"></div>
+          <div class="source" id="source"></div>
+        </div>
+
+        <div class="card auto">
+          <div class="card-head">
+            <h4>Frames for the AI <span class="tip" tabindex="0" data-tip="Screenshots let the AI 'see' the scene: framing, setting, wardrobe, on-screen text. Pause on the key moment, then grab. Up to 3 frames.">?</span></h4>
+            <button class="btn sm" id="btnFrame">📸 Grab frame</button>
+          </div>
+          <div class="frames" id="frames"><p class="muted small">No frames yet.</p></div>
+        </div>
+
+        <div class="card">
+          <label class="field">
+            <span class="row">What happens in the video? <span class="muted small">(optional)</span>
+              <span class="tip" tabindex="0" data-tip="A sentence or two in your own words, e.g. 'guy in suit gets startled by a pigeon, then fights it in slow motion'. The more specific, the better the brief.">?</span></span>
+            <textarea id="notes" rows="3" placeholder="e.g. Man in a suit shadow-boxes in a park, then a dog joins in. Punchline at 0:06."></textarea>
+          </label>
+        </div>
+
+        <div class="card manual">
+          <h4>✋ Your manual steps</h4>
+          <ul>
+            <li>Watch the video once and <b>pause on the punchline or key moment</b>, then press <b>Grab frame</b>. Add 1–2 more frames for setup and payoff.</li>
+            <li>Skim the top comments: is there an <b>"is this real?"</b> debate or a running joke? Note it above.</li>
+            <li>Only chase videos marked <b>Hot</b> or <b>Warm</b>; skip anything older than ~2 weeks unless it's still climbing.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 2: CHARACTER -->
+    <section class="step" data-step="1">
+      <div class="card auto">
+        <div class="card-head">
+          <h4>Your character <span class="tip" tabindex="0" data-tip="Saved character profiles keep every brief consistent: same face, outfit and personality across all your videos.">?</span></h4>
+          <button class="btn sm" id="btnManageChars">Manage</button>
+        </div>
+        <select id="charSelect"></select>
+        <div id="charCard" class="char-card"></div>
+      </div>
+
+      <div id="quickChar" class="card hidden">
+        <h3 style="margin-bottom:8px">Create your first character</h3>
+        <div class="stack">
+          <label class="field">Name <input type="text" id="qcName" placeholder="e.g. Pierre Moustache" /></label>
+          <label class="field"><span class="row">Fixed appearance <span class="tip" tabindex="0" data-tip="Traits that must never change: age, face, hair, facial hair, outfit, signature item. This text is copied into every image prompt.">?</span></span>
+            <textarea id="qcAppearance" rows="3" placeholder="40s, slicked blonde hair, curled waxed moustache, navy three-piece suit, red pocket square"></textarea></label>
+          <label class="field">Personality / voice <input type="text" id="qcPersonality" placeholder="Deadpan, overly formal, takes absurd situations seriously" /></label>
+          <label class="field">Recurring setting <input type="text" id="qcSet" placeholder="City park, golden hour" /></label>
+          <button class="btn primary" id="btnQuickSave">Save character</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="stack">
+          <label class="field"><span class="row">Post the new video on <span class="tip" tabindex="0" data-tip="Changes caption length, hook style and hashtag count to suit the platform.">?</span></span>
+            <select id="targetPlatform">
+              <option value="auto">Same as source</option>
+              <option value="tiktok">TikTok</option>
+              <option value="instagram">Instagram Reels</option>
+              <option value="youtube shorts">YouTube Shorts</option>
+            </select>
+          </label>
+          <label class="field"><span class="row">Extra direction <span class="muted small">(optional)</span> <span class="tip" tabindex="0" data-tip="Anything you want the AI to lean into: 'make it wholesome', 'set it in Paris', 'end on a cliffhanger'.">?</span></span>
+            <input type="text" id="extraDirection" placeholder="e.g. make the twist that he loses to a toddler" /></label>
+        </div>
+      </div>
+
+      <div class="card manual">
+        <h4>✋ Your manual steps</h4>
+        <ul>
+          <li>Keep a <b>master reference image</b> of your character handy — you'll upload it to your image tool for face consistency.</li>
+          <li>If the trending format needs a second character, add a quick note in "Extra direction".</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- STEP 3: BRIEF -->
+    <section class="step" data-step="2">
+      <div class="card auto">
+        <div class="card-head">
+          <h4>Generate brief <span class="tip" tabindex="0" data-tip="Sends the trend data, your frames, notes and character profile to your chosen AI with your own API key. Nothing goes through our servers.">?</span></h4>
+        </div>
+        <div class="row">
+          <label class="field grow">Provider
+            <select id="provSelect"></select>
+          </label>
+          <label class="field grow"><span class="row">Model <span class="tip left" tabindex="0" data-tip="Bigger models write sharper briefs; smaller ones are faster and cheaper. Vision-capable models use your frames.">?</span></span>
+            <select id="modelSelect"></select>
+          </label>
+        </div>
+        <div id="briefReadiness" class="readiness"></div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn primary grow" id="btnGenerate">✨ Generate brief</button>
+          <button class="btn hidden" id="btnCancel">Cancel</button>
+        </div>
+        <div id="genStatus" class="small muted" style="margin-top:8px"></div>
+      </div>
+
+      <div id="briefSummary" class="hidden">
+        <div class="card">
+          <div class="card-head">
+            <h3 id="bsFormat"></h3>
+            <span id="bsScore" class="pill"></span>
+          </div>
+          <p id="bsWhy"></p>
+          <p class="small muted" id="bsReason"></p>
+          <h4 style="margin-top:10px">The new scene</h4>
+          <p id="bsScene"></p>
+          <h4 style="margin-top:10px">Your twist</h4>
+          <p id="bsTwist"></p>
+          <p class="small muted" id="bsAssumptions"></p>
+        </div>
+      </div>
+
+      <div class="card manual">
+        <h4>✋ Your manual steps</h4>
+        <ul>
+          <li>Read the "new scene". If it's off, add direction in step 2 and regenerate — it costs a fraction of a cent.</li>
+          <li>Low replicability score (under 5)? Consider skipping this format; it'll be hard to make look good with AI.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- STEP 4: PRODUCE -->
+    <section class="step" data-step="3">
+      <div id="produceEmpty" class="empty">
+        <div class="empty-icon">🧩</div>
+        <p class="muted">Generate a brief in step 3 first.</p>
+      </div>
+      <div id="produceBody" class="stack hidden">
+        <div class="card auto">
+          <div class="card-head">
+            <h4>Key-frame image prompt <span class="tip" tabindex="0" data-tip="Paste into your image generator along with your character reference image. Edit freely — changes are kept.">?</span></h4>
+            <button class="btn sm" data-copy="imagePrompt">Copy</button>
+          </div>
+          <textarea id="imagePrompt" class="mono" rows="6"></textarea>
+        </div>
+        <div class="card auto">
+          <div class="card-head">
+            <h4>Motion / video prompt <span class="tip" tabindex="0" data-tip="Use in an image-to-video tool after you've generated the key frame.">?</span></h4>
+            <button class="btn sm" data-copy="videoPrompt">Copy</button>
+          </div>
+          <textarea id="videoPrompt" class="mono" rows="4"></textarea>
+        </div>
+        <div class="card auto">
+          <div class="card-head">
+            <h4>Shot list</h4>
+            <button class="btn sm" id="btnCopyShots">Copy</button>
+          </div>
+          <ol class="shots" id="shotList"></ol>
+          <h4 style="margin-top:10px">Audio</h4>
+          <p id="audio"></p>
+        </div>
+        <div class="card manual">
+          <h4>✋ Your manual steps</h4>
+          <ul class="checklist" id="produceChecklist"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: PUBLISH -->
+    <section class="step" data-step="4">
+      <div id="publishEmpty" class="empty">
+        <div class="empty-icon">🚀</div>
+        <p class="muted">Generate a brief in step 3 first.</p>
+      </div>
+      <div id="publishBody" class="stack hidden">
+        <div class="card auto">
+          <div class="card-head">
+            <h4>Pick a hook <span class="tip" tabindex="0" data-tip="The on-screen line for the first 1–2 seconds. It decides whether people keep watching.">?</span></h4>
+            <button class="btn sm" id="btnRegenCopy" title="New hooks, caption and hashtags">↻ New options</button>
+          </div>
+          <div id="hooks" class="hooks"></div>
+        </div>
+        <div class="card auto">
+          <div class="card-head">
+            <h4>Caption</h4>
+            <button class="btn sm" id="btnCopyCaption">Copy caption + tags</button>
+          </div>
+          <textarea id="caption" rows="3"></textarea>
+          <label class="field" style="margin-top:8px"><span class="row">Hashtags <span class="tip" tabindex="0" data-tip="Space-separated. Mix 1–2 broad tags with niche ones; 3–6 is plenty.">?</span></span>
+            <input type="text" id="hashtags" /></label>
+          <h4 style="margin-top:10px">Pinned comment / debate starter <span class="tip" tabindex="0" data-tip="Post this as the first comment and pin it. Debate drives comments, which drives reach.">?</span></h4>
+          <div class="row"><p id="bait" class="grow" style="margin:0"></p><button class="btn sm" data-copy-text="bait">Copy</button></div>
+        </div>
+        <div class="card">
+          <div class="row wrap">
+            <button class="btn primary grow" id="btnCopyAll">📋 Copy full brief</button>
+            <button class="btn grow" id="btnExport">⬇ Export .txt</button>
+          </div>
+          <p class="small muted" style="margin-top:8px" id="savedNote">Saved to History automatically.</p>
+        </div>
+        <div class="card manual">
+          <h4>✋ Your manual steps</h4>
+          <ul class="checklist" id="publishChecklist"></ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- HISTORY VIEW -->
+  <section id="historyView" class="overlay hidden">
+    <div class="overlay-head">
+      <button class="btn sm" id="btnHistoryBack">← Back</button>
+      <h3>History</h3>
+      <button class="btn sm danger" id="btnHistoryClear">Clear all</button>
+    </div>
+    <input type="text" id="historySearch" placeholder="Search by creator, format or caption…" />
+    <div id="historyList" class="history-list"></div>
+  </section>
+
+  <footer class="wizard-foot">
+    <button class="btn" id="btnBack">← Back</button>
+    <span class="small muted" id="stepLabel"></span>
+    <button class="btn primary" id="btnNext">Next →</button>
+  </footer>
+
+  <div id="toast"></div>
+  <script type="module" src="sidepanel.js"></script>
+</body>
+</html>

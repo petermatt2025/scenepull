@@ -1,0 +1,55 @@
+/* =========================================================
+   ScenePull brand tokens
+   ---------------------------------------------------------
+   anthonyhayes.io could not be reached from the build
+   environment, so these are placeholder values. Swap the
+   hex codes in this ONE block to re-skin the whole extension
+   (side panel + settings). Also update content/content.css
+   (floating button) and icons if the primary colour changes.
+   ========================================================= */
+:root {
+  --sp-primary: #2563eb;        /* main buttons, active tab */
+  --sp-primary-hover: #1d4ed8;
+  --sp-primary-ink: #ffffff;    /* text on primary */
+  --sp-accent: #f97316;         /* "hot" trend flags, highlights */
+  --sp-success: #16a34a;
+  --sp-warn: #d97706;
+  --sp-danger: #dc2626;
+
+  --sp-bg: #f8fafc;
+  --sp-surface: #ffffff;
+  --sp-surface-2: #f1f5f9;
+  --sp-border: #e2e8f0;
+  --sp-text: #0f172a;
+  --sp-muted: #64748b;
+  --sp-header-bg: #0f172a;
+  --sp-header-ink: #ffffff;
+
+  --sp-radius: 10px;
+  --sp-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sp-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sp-bg: #0b1120;
+    --sp-surface: #111827;
+    --sp-surface-2: #1e293b;
+    --sp-border: #273244;
+    --sp-text: #e5e7eb;
+    --sp-muted: #94a3b8;
+    --sp-header-bg: #020617;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --sp-bg: #0b1120;
+  --sp-surface: #111827;
+  --sp-surface-2: #1e293b;
+  --sp-border: #273244;
+  --sp-text: #e5e7eb;
+  --sp-muted: #94a3b8;
+  --sp-header-bg: #020617;
+  color-scheme: dark;
+}
